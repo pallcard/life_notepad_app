@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:life_notepad_app/page/component/NotepadCard.dart';
+import 'package:life_notepad_app/page/component/notepad_card.dart';
 
 class HomaPage extends StatefulWidget {
   const HomaPage({super.key});
