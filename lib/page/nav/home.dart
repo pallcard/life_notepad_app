@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:life_notepad_app/page/component/NotepadCard.dart';
 
@@ -14,13 +13,26 @@ class _HomaPageState extends State<HomaPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-    ListView.builder(
-    itemBuilder: (BuildContext context, int i) {
-      return NotepadCard();
-    }),
-        FloatingActionButton( child: const Icon(Icons.add),onPressed: () { print("ssss"); },)
+        ListView.builder(itemBuilder: (BuildContext context, int i) {
+          return NotepadCard();
+        }),
+        Container(
+          alignment: Alignment.bottomRight,
+          padding: const EdgeInsets.only(right: 10, bottom: 10),
+          child: FloatingActionButton(
+            // tooltip: "快新增一条吧！",
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.blue,
+            elevation: 6.0,
+            highlightElevation: 12.0,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.add),
+            onPressed: () {
+              print("ssss");
+            },
+          ),
+        )
       ],
     );
-
   }
 }
