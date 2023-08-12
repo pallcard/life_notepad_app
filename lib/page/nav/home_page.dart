@@ -18,7 +18,24 @@ class _HomaPageState extends State<HomaPage>
   List<NoteList> _noteList = [];
   List widgets = [];
 
-  EasyRefreshController easyRefreshController = EasyRefreshController();
+  late EasyRefreshController _easyRefreshController;
+  final _easyRefreshKey = GlobalKey();
+  final _easyRefreshListenable = IndicatorStateListenable();
+
+  @override
+  void initState() {
+    super.initState();
+    _easyRefreshController = EasyRefreshController(
+      controlFinishRefresh: true,
+      controlFinishLoad: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    _easyRefreshController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +54,11 @@ class _HomaPageState extends State<HomaPage>
                 }
               }
               return EasyRefresh(
-                controller: easyRefreshController,
+                controller: _easyRefreshController,
+                header: MaterialHeader(),
                 footer: const ClassicFooter(
-                  noMoreText: '我也是有底线的！！！',
-                  showText: true,
-                  showMessage: true,
+                  noMoreText: "我也是有底线的",
+                  messageText: '最后更新于%T',
                 ),
                 onLoad: () async {
                   print('开始加载更多${pageNum}');
@@ -52,13 +69,17 @@ class _HomaPageState extends State<HomaPage>
                       pageNum++;
                       setState(() {
                         for (int i = 0;
-                        i < newNoteListRes.noteList!.length;
-                        i++) {
+                            i < newNoteListRes.noteList!.length;
+                            i++) {
                           _noteList.add(newNoteListRes.noteList![i]);
                         }
                       });
+                      print("load ...");
+                      _easyRefreshController
+                          .finishLoad(IndicatorResult.success);
                     } else {
                       print("load over");
+                      _easyRefreshController.finishLoad(IndicatorResult.noMore);
                     }
                   });
                 },
@@ -71,10 +92,11 @@ class _HomaPageState extends State<HomaPage>
                       _noteList = newNoteListRes.noteList!;
                       pageNum++;
                     });
+                    _easyRefreshController.finishRefresh();
+                    _easyRefreshController.resetFooter();
                   });
                 },
                 child: ListView.builder(
-                  // shrinkWrap: true,
                     itemCount: _noteList.length,
                     itemBuilder: (BuildContext context, int i) {
                       return Container(
@@ -85,7 +107,9 @@ class _HomaPageState extends State<HomaPage>
                     }),
               );
             } else {
-              return CircularProgressIndicator();
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
             }
           },
         ),
