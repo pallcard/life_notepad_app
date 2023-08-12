@@ -12,11 +12,11 @@ void main() {
   final router = FluroRouter();
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider<NoteListProvider>(
-        create: (ctx) => NoteListProvider(),
+      ChangeNotifierProvider<NoteListProvide>(
+        create: (ctx) => NoteListProvide(),
       ),
-      ChangeNotifierProvider<CurrentIndexProvider>(
-        create: (ctx) => CurrentIndexProvider(),
+      ChangeNotifierProvider<CurrentIndexProvide>(
+        create: (ctx) => CurrentIndexProvide(),
       ),
     ],
     child: const MyApp(),

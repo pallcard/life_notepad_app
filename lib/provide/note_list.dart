@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-class NoteListProvider with ChangeNotifier {
+class NoteListProvide with ChangeNotifier {
   List noteList = [];
 
   void getNoteList(List list) {
