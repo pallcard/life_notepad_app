@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_notepad_app/utils/user_util.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 import '../../config/service_url.dart';
@@ -29,7 +30,7 @@ class _AddNotePageState extends State<AddNotePage> {
               onPressed: () async {
                 print(_contentController.text);
                 var params = {
-                  'UserId': 1,
+                  'UserId': UserUtil.getUserInfo().userId,
                   'Content': _contentController.text,
                   'Images': _images.sublist(1),
                   'Location': _location,
