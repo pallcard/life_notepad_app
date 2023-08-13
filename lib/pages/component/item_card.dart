@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
 
+// class ItemData {
+//   ItemData({
+//     Icon? icon,
+//     String? label,
+//   }) {
+//     icon = icon;
+//     label = label;
+//   }
+//
+//   late Icon icon;
+//   late String label;
+// }
+
 class ItemCard extends StatelessWidget {
   const ItemCard({super.key});
+
+  // final ItemData item;
 
   @override
   Widget build(BuildContext context) {
@@ -16,11 +31,11 @@ class ItemCard extends StatelessWidget {
               Container(
                 margin: const EdgeInsets.only(right: 10),
                 alignment: Alignment.center,
-                child: const Icon(Icons.settings),
+                child: Icon(Icons.logout),
               ),
               Container(
                 alignment: Alignment.center,
-                child: const Text("设置"),
+                child: Text("登出"),
               ),
               const Expanded(child: Text("")),
               Container(

@@ -34,17 +34,18 @@ class _AddNotePageState extends State<AddNotePage> {
                   'Images': _images.sublist(1),
                   'Location': _location,
                 };
-                await request(addNoteUri, params: params).then((val) {
-                  if (val["Code"] != 0) {
+                await request(context, ServiceUrl.addNote, params: params)
+                    .then((val) {
+                  if (val["code"] != 0) {
                     Fluttertoast.showToast(
-                        msg: val["Error"],
+                        msg: '${val["message"]}',
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.CENTER,
                         timeInSecForIosWeb: 1,
                         textColor: Colors.white,
                         fontSize: 16.0);
                   } else {
-                    print(val["Data"]);
+                    print(val["data"]);
                     Navigator.pop(context);
                   }
                 });

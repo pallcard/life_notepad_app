@@ -38,13 +38,13 @@ class _HomaPageState extends State<HomaPage>
     super.dispose();
   }
 
-  Future _getNoteList() async {
+  Future _getNoteList(BuildContext context) async {
     var params = {'PageNum': pageNum, 'PageSize': pageSize};
-    var val = await request(noteListUri, params: params);
+    var val = await request(context, ServiceUrl.noteList, params: params);
 
-    if (val["Code"] != 0) {
+    if (val["code"] != 0) {
       Fluttertoast.showToast(
-          msg: val["Error"],
+          msg: '${val["message"]}',
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
@@ -52,8 +52,8 @@ class _HomaPageState extends State<HomaPage>
           fontSize: 16.0);
       return null;
     } else {
-      print(val["Data"]);
-      return val["Data"];
+      print(val["data"]);
+      return val["data"];
     }
   }
 
@@ -62,7 +62,7 @@ class _HomaPageState extends State<HomaPage>
     return Stack(
       children: [
         FutureBuilder(
-          future: _getNoteList(),
+          future: _getNoteList(context),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               if (_noteList.isEmpty) {
@@ -82,10 +82,11 @@ class _HomaPageState extends State<HomaPage>
                 onLoad: () async {
                   print('开始加载更多${pageNum}');
                   var params = {'PageNum': pageNum, 'PageSize': pageSize};
-                  await request(noteListUri, params: params).then((val) {
-                    if (val["Code"] != 0) {
+                  await request(context, ServiceUrl.noteList, params: params)
+                      .then((val) {
+                    if (val["code"] != 0) {
                       Fluttertoast.showToast(
-                          msg: val["Error"],
+                          msg: '${val["message"]}',
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.CENTER,
                           timeInSecForIosWeb: 1,
@@ -93,7 +94,7 @@ class _HomaPageState extends State<HomaPage>
                           fontSize: 16.0);
                       return null;
                     } else {
-                      var newNoteListRes = NoteListRes.fromJson(val["Data"]);
+                      var newNoteListRes = NoteListRes.fromJson(val["data"]);
                       if (newNoteListRes.noteList!.isNotEmpty) {
                         pageNum++;
                         setState(() {
@@ -117,10 +118,11 @@ class _HomaPageState extends State<HomaPage>
                 onRefresh: () async {
                   pageNum = 1;
                   var params = {'PageNum': pageNum, 'PageSize': pageSize};
-                  await request(noteListUri, params: params).then((val) {
-                    if (val["Code"] != 0) {
+                  await request(context, ServiceUrl.noteList, params: params)
+                      .then((val) {
+                    if (val["code"] != 0) {
                       Fluttertoast.showToast(
-                          msg: val["Error"],
+                          msg: '${val["message"]}',
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.CENTER,
                           timeInSecForIosWeb: 1,

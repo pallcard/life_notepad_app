@@ -1,7 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:life_notepad_app/config/service_url.dart';
+import 'package:life_notepad_app/utils/user_util.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../model/User.dart';
+import '../../provide/user.dart';
+import '../../routers/routes.dart';
 import '../../service/service_method.dart';
 
 class LoginPage extends StatefulWidget {
@@ -110,49 +118,59 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildLoginButton(BuildContext context) {
-    return Align(
-      child: SizedBox(
-        height: 45,
-        width: 270,
-        child: ElevatedButton(
-          style: ButtonStyle(
-              backgroundColor:
-                  const MaterialStatePropertyAll<Color>(Colors.lightBlue),
-              // 设置圆角
-              shape: MaterialStateProperty.all(const StadiumBorder(
-                  side: BorderSide(style: BorderStyle.none)))),
-          child: Text('Login',
-              style: Theme.of(context).primaryTextTheme.headlineSmall),
-          onPressed: () async {
-            // 表单校验通过才会继续执行
-            if ((_formKey.currentState as FormState).validate()) {
-              (_formKey.currentState as FormState).save();
-              //TODO 执行登录方法
-              print('email: $_email, password: $_password');
-              var params = {
-                'Email': _email,
-                'PassWord': _password,
-              };
-              await request(loginUri, params: params).then((val) {
-                if (val["Code"] != 0) {
-                  Fluttertoast.showToast(
-                      msg: val["Error"],
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.CENTER,
-                      timeInSecForIosWeb: 1,
-                      textColor: Colors.white,
-                      fontSize: 16.0);
-                } else {
-                  print(val["Data"]);
-                  // todo
-                  Navigator.pop(context);
-                }
-              });
-            }
-          },
-        ),
-      ),
-    );
+    return Consumer<UserProvide>(
+        builder: (ctx, user, child) => Align(
+              child: SizedBox(
+                height: 45,
+                width: 270,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                      backgroundColor: const MaterialStatePropertyAll<Color>(
+                          Colors.lightBlue),
+                      // 设置圆角
+                      shape: MaterialStateProperty.all(const StadiumBorder(
+                          side: BorderSide(style: BorderStyle.none)))),
+                  child: Text('Login',
+                      style: Theme.of(context).primaryTextTheme.headlineSmall),
+                  onPressed: () async {
+                    // 表单校验通过才会继续执行
+                    if ((_formKey.currentState as FormState).validate()) {
+                      (_formKey.currentState as FormState).save();
+                      //TODO 执行登录方法
+                      print('email: $_email, password: $_password');
+                      var params = {
+                        'Email': _email,
+                        'Password': _password,
+                      };
+                      await request(context, ServiceUrl.login, params: params)
+                          .then((val) async {
+                        print(val);
+                        if (val["code"] != 0) {
+                          Fluttertoast.showToast(
+                              msg: '${val["message"]}',
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIosWeb: 1,
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: "登陆成功！",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIosWeb: 1,
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                          print(val["data"]);
+                          UserUtil.saveUserInfo(User.fromJson(val["data"]));
+                          Navigator.pushNamed(context, Routes.home);
+                        }
+                      });
+                    }
+                  },
+                ),
+              ),
+            ));
   }
 
   Widget buildForgetPasswordText(BuildContext context) {

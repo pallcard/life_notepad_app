@@ -4,14 +4,22 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:life_notepad_app/pages/basic/navigation.dart';
 import 'package:life_notepad_app/provide/current_index.dart';
 import 'package:life_notepad_app/provide/note_list.dart';
+import 'package:life_notepad_app/provide/user.dart';
 import 'package:life_notepad_app/routers/application.dart';
 import 'package:life_notepad_app/routers/routes.dart';
+import 'package:life_notepad_app/utils/sp_util.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+Future<void> main() async {
+  //sp
+  WidgetsFlutterBinding.ensureInitialized();
+  await SpUtil.init();
+
+  //router
   final router = FluroRouter();
-  Application.router = router; // 先写
-  Routes.configureRoutes(router); // 后写
+  Application.router = router;
+  Routes.configureRoutes(router);
+  // provider
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<NoteListProvide>(
@@ -19,6 +27,9 @@ void main() {
       ),
       ChangeNotifierProvider<CurrentIndexProvide>(
         create: (ctx) => CurrentIndexProvide(),
+      ),
+      ChangeNotifierProvider<UserProvide>(
+        create: (ctx) => UserProvide(),
       ),
     ],
     child: const MyApp(),
