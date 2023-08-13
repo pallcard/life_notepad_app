@@ -43,6 +43,8 @@ dependencies:
   easy_refresh: ^3.3.2+1
   fluro: ^2.0.5
   provider: ^6.0.5
+  wechat_assets_picker: ^8.6.2
+  fluttertoast: ^8.2.2
 
 dev_dependencies:
   flutter_test:

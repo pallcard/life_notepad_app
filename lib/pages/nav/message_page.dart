@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:life_notepad_app/page/component/message_card.dart';
+import '../component/message_card.dart';
 
 class MessagePage extends StatefulWidget {
   const MessagePage({super.key});

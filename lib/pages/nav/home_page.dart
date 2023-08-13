@@ -1,6 +1,9 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:life_notepad_app/config/service_url.dart';
 import '../../model/NoteListRes.dart';
+import '../../routers/routes.dart';
 import '../../service/service_method.dart';
 import '../component/notepad_card.dart';
 
@@ -19,8 +22,6 @@ class _HomaPageState extends State<HomaPage>
   List widgets = [];
 
   late EasyRefreshController _easyRefreshController;
-  final _easyRefreshKey = GlobalKey();
-  final _easyRefreshListenable = IndicatorStateListenable();
 
   @override
   void initState() {
@@ -37,13 +38,31 @@ class _HomaPageState extends State<HomaPage>
     super.dispose();
   }
 
+  Future _getNoteList() async {
+    var params = {'PageNum': pageNum, 'PageSize': pageSize};
+    var val = await request(noteListUri, params: params);
+
+    if (val["Code"] != 0) {
+      Fluttertoast.showToast(
+          msg: val["Error"],
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return null;
+    } else {
+      print(val["Data"]);
+      return val["Data"];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    var params = {'PageNum': pageNum, 'PageSize': pageSize};
     return Stack(
       children: [
         FutureBuilder(
-          future: request('noteList', params: params),
+          future: _getNoteList(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               if (_noteList.isEmpty) {
@@ -63,37 +82,60 @@ class _HomaPageState extends State<HomaPage>
                 onLoad: () async {
                   print('开始加载更多${pageNum}');
                   var params = {'PageNum': pageNum, 'PageSize': pageSize};
-                  await request('noteList', params: params).then((val) {
-                    var newNoteListRes = NoteListRes.fromJson(val);
-                    if (newNoteListRes.noteList!.isNotEmpty) {
-                      pageNum++;
-                      setState(() {
-                        for (int i = 0;
-                            i < newNoteListRes.noteList!.length;
-                            i++) {
-                          _noteList.add(newNoteListRes.noteList![i]);
-                        }
-                      });
-                      print("load ...");
-                      _easyRefreshController
-                          .finishLoad(IndicatorResult.success);
+                  await request(noteListUri, params: params).then((val) {
+                    if (val["Code"] != 0) {
+                      Fluttertoast.showToast(
+                          msg: val["Error"],
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                      return null;
                     } else {
-                      print("load over");
-                      _easyRefreshController.finishLoad(IndicatorResult.noMore);
+                      var newNoteListRes = NoteListRes.fromJson(val["Data"]);
+                      if (newNoteListRes.noteList!.isNotEmpty) {
+                        pageNum++;
+                        setState(() {
+                          for (int i = 0;
+                              i < newNoteListRes.noteList!.length;
+                              i++) {
+                            _noteList.add(newNoteListRes.noteList![i]);
+                          }
+                        });
+                        print("load ...");
+                        _easyRefreshController
+                            .finishLoad(IndicatorResult.success);
+                      } else {
+                        print("load over");
+                        _easyRefreshController
+                            .finishLoad(IndicatorResult.noMore);
+                      }
                     }
                   });
                 },
                 onRefresh: () async {
                   pageNum = 1;
                   var params = {'PageNum': pageNum, 'PageSize': pageSize};
-                  await request('noteList', params: params).then((val) {
-                    var newNoteListRes = NoteListRes.fromJson(val);
-                    setState(() {
-                      _noteList = newNoteListRes.noteList!;
-                      pageNum++;
-                    });
-                    _easyRefreshController.finishRefresh();
-                    _easyRefreshController.resetFooter();
+                  await request(noteListUri, params: params).then((val) {
+                    if (val["Code"] != 0) {
+                      Fluttertoast.showToast(
+                          msg: val["Error"],
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                      return null;
+                    } else {
+                      var newNoteListRes = NoteListRes.fromJson(val["Data"]);
+                      setState(() {
+                        _noteList = newNoteListRes.noteList!;
+                        pageNum++;
+                      });
+                      _easyRefreshController.finishRefresh();
+                      _easyRefreshController.resetFooter();
+                    }
                   });
                 },
                 child: ListView.builder(
@@ -124,10 +166,7 @@ class _HomaPageState extends State<HomaPage>
             shape: const CircleBorder(),
             child: const Icon(Icons.add),
             onPressed: () {
-              setState(() {
-                _noteList.add(_noteList[0]);
-                print(_noteList.length);
-              });
+              Navigator.pushNamed(context, Routes.addNote);
             },
           ),
         )
