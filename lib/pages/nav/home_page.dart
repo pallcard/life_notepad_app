@@ -130,7 +130,7 @@ class _HomaPageState extends State<HomaPage>
                           fontSize: 16.0);
                       return null;
                     } else {
-                      var newNoteListRes = NoteListRes.fromJson(val["Data"]);
+                      var newNoteListRes = NoteListRes.fromJson(val["data"]);
                       setState(() {
                         _noteList = newNoteListRes.noteList!;
                         pageNum++;
