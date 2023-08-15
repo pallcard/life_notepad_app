@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:life_notepad_app/model/FilesRes.dart';
 import 'package:life_notepad_app/utils/user_util.dart';
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 import '../../config/service_url.dart';
 import '../../service/service_method.dart';
@@ -15,7 +18,9 @@ class AddNotePage extends StatefulWidget {
 
 class _AddNotePageState extends State<AddNotePage> {
   late String _location;
-  late final List<String> _images = [];
+
+  final List<XFile> _images = []; //图片文件
+  final List<String> _imageNames = [];
   final TextEditingController _contentController = TextEditingController();
 
   @override
@@ -32,7 +37,7 @@ class _AddNotePageState extends State<AddNotePage> {
                 var params = {
                   'UserId': UserUtil.getUserInfo().userId,
                   'Content': _contentController.text,
-                  'Images': _images.sublist(1),
+                  'Images': _imageNames,
                   'Location': _location,
                 };
                 await request(context, ServiceUrl.addNote, params: params)
@@ -102,8 +107,6 @@ class _AddNotePageState extends State<AddNotePage> {
   @override
   void initState() {
     super.initState();
-    // 增加加号图片
-    _images.add("https://img2.baidu.com/it/u=1697454050,833742662&fm=253");
     _location = "湖北";
   }
 
@@ -111,22 +114,32 @@ class _AddNotePageState extends State<AddNotePage> {
     return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: _images.length,
+        itemCount: _images.length + 1,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3, mainAxisSpacing: 3, childAspectRatio: 1.0),
         itemBuilder: (BuildContext context, int position) {
           return GestureDetector(
-            onTap: () {
+            onTap: () async {
               if (position == 0) {
-                //最后一张图片（添加按钮）
-                print("增加图片");
-
-                // final List<AssetEntity>? assets =
-                //     await AssetPicker.pickAssets(context);
-
+                var imageFiles = await ImagePicker().pickMultiImage();
                 setState(() {
-                  _images.add(
-                      "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fsafe-img.xhscdn.com%2Fbw1%2F1c5a5c88-3063-4615-905a-a9b9e4c2acb5%3FimageView2%2F2%2Fw%2F1080%2Fformat%2Fjpg&refer=http%3A%2F%2Fsafe-img.xhscdn.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1694020103&t=15637d7ccac5a81aa1e0fa4a558efed9");
+                  _images.addAll(imageFiles);
+                });
+                await uploadFile(context, ServiceUrl.fileUpload, imageFiles)
+                    .then((val) {
+                  if (val["code"] != 0) {
+                    Fluttertoast.showToast(
+                        msg: '${val["message"]}',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        textColor: Colors.white,
+                        fontSize: 16.0);
+                  } else {
+                    print(val["data"]);
+                    var filesRes = FilesRes.fromJson(val["data"]);
+                    _imageNames.addAll(filesRes.names ?? []);
+                  }
                 });
               }
             },
@@ -134,9 +147,12 @@ class _AddNotePageState extends State<AddNotePage> {
               width: 80,
               height: 80,
               padding: const EdgeInsets.all(8),
-              child: Image(
-                image: NetworkImage(_images[position]),
-              ),
+              child: position == 0
+                  ? const Image(
+                      image: NetworkImage(
+                          "https://img2.baidu.com/it/u=1697454050,833742662&fm=253"),
+                    )
+                  : Image.file(File(_images.elementAt(position - 1).path)),
             ),
           );
         });

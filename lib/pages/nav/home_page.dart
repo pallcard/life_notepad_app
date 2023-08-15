@@ -52,7 +52,7 @@ class _HomaPageState extends State<HomaPage>
           fontSize: 16.0);
       return null;
     } else {
-      print(val["data"]);
+      // print(val["data"]);
       return val["data"];
     }
   }

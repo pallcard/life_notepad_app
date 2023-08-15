@@ -12,41 +12,40 @@ class NotepadCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       child: Card(
           child: Column(
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    padding: const EdgeInsets.all(8),
-                    child: Image(
-                      image: NetworkImage(
-                        note.avatar ?? "",
-                      ),
-                    ),
-                  ),
-                  Text(
-                    note.nickName ?? "",
-                    style: const TextStyle(
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
               Container(
-                alignment: Alignment.centerLeft,
+                width: 50,
+                height: 50,
                 padding: const EdgeInsets.all(8),
-                child: Text(
-                  note.content ?? "",
-                  style: const TextStyle(
-                    fontSize: 15,
+                child: Image(
+                  image: NetworkImage(
+                    note.avatar ?? "",
                   ),
                 ),
               ),
-              (note.images == null || note.images!.isNotEmpty)
-                  ? const Text("")
-                  :
-              GridView.builder(
+              Text(
+                note.nickName ?? "",
+                style: const TextStyle(
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              note.content ?? "",
+              style: const TextStyle(
+                fontSize: 15,
+              ),
+            ),
+          ),
+          (note.images == null || note.images!.isEmpty)
+              ? const Text("")
+              : GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: note.images?.length,
@@ -62,28 +61,28 @@ class NotepadCard extends StatelessWidget {
                       ),
                     );
                   }),
-              Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(left: 8),
-                child: Text(
-                  note.createTime ?? "",
-                  style: const TextStyle(
-                    fontSize: 10,
-                  ),
-                ),
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              note.createTime ?? "",
+              style: const TextStyle(
+                fontSize: 10,
               ),
-              Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(left: 8, bottom: 8),
-                child: Text(
-                  note.location ?? "",
-                  style: const TextStyle(
-                    fontSize: 10,
-                  ),
-                ),
+            ),
+          ),
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(left: 8, bottom: 8),
+            child: Text(
+              note.location ?? "",
+              style: const TextStyle(
+                fontSize: 10,
               ),
-            ],
-          )),
+            ),
+          ),
+        ],
+      )),
     );
   }
 }
