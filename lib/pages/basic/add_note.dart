@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,8 +7,12 @@ import 'package:life_notepad_app/model/FilesRes.dart';
 import 'package:life_notepad_app/utils/user_util.dart';
 
 import '../../config/service_url.dart';
+import '../../model/Location.dart';
 import '../../service/service_method.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
+import 'package:flutter_z_location/flutter_z_location.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AddNotePage extends StatefulWidget {
   const AddNotePage({super.key});
@@ -17,59 +22,108 @@ class AddNotePage extends StatefulWidget {
 }
 
 class _AddNotePageState extends State<AddNotePage> {
-  late String _location;
+  late Location _location;
+
+  // 是否显示位置
+  bool showLocation = false;
+
+  // 是否上传完图片
+  bool imageUpload = true;
 
   final List<XFile> _images = []; //图片文件
   final List<String> _imageNames = [];
   final TextEditingController _contentController = TextEditingController();
 
+  Future _getInitData(BuildContext context) async {
+    var permission = await requestLocationPermission();
+    if (permission) {
+      // 获取GPS定位经纬度
+      final coordinate = await FlutterZLocation.getCoordinate();
+      // 经纬度反向地理编码获取地址信息(省、市、区)
+      final res1 = await FlutterZLocation.geocodeCoordinate(
+          coordinate.latitude, coordinate.longitude,
+          pathHead: 'assets/');
+
+      return res1;
+    } else {
+      return null;
+    }
+  }
+
+  Future<bool> requestLocationPermission() async {
+    //获取当前的权限
+    var locationWhenInUse = await Permission.location.status;
+    if (locationWhenInUse == PermissionStatus.granted) {
+      //已经授权
+      return true;
+    } else {
+      //未授权则发起一次申请
+      locationWhenInUse = await Permission.location.request();
+      if (locationWhenInUse == PermissionStatus.granted) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: true,
-        actions: [
-          IconButton(
-              icon: const Icon(Icons.send),
-              tooltip: "发布",
-              onPressed: () async {
-                print(_contentController.text);
-                var params = {
-                  'UserId': UserUtil.getUserInfo().userId,
-                  'Content': _contentController.text,
-                  'Images': _imageNames,
-                  'Location': _location,
-                };
-                await request(context, ServiceUrl.addNote, params: params)
-                    .then((val) {
-                  if (val["code"] != 0) {
-                    Fluttertoast.showToast(
-                        msg: '${val["message"]}',
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.CENTER,
-                        timeInSecForIosWeb: 1,
-                        textColor: Colors.white,
-                        fontSize: 16.0);
-                  } else {
-                    print(val["data"]);
-                    Navigator.pop(context);
-                  }
-                });
-              }),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.only(left: 25, right: 25),
-          child: Column(
-            children: [
-              buildTextField(),
-              buildImageField(),
-              buildLocal(),
+    return FutureBuilder(
+      future: _getInitData(context),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          _location = Location.fromGeocodeEntity(snapshot.data);
+          showLocation = true;
+        }
+        return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: true,
+            actions: [
+              IconButton(
+                  icon: const Icon(Icons.send),
+                  tooltip: "发布",
+                  onPressed: () async {
+                    print(_contentController.text);
+                    var params = {
+                      'UserId': UserUtil.getUserInfo().userId,
+                      'Content': _contentController.text,
+                      'Images': _imageNames,
+                      'Location': showLocation ? jsonEncode(_location) : "",
+                    };
+
+                    await request(context, ServiceUrl.addNote, params: params)
+                        .then((val) {
+                      if (val["code"] != 0) {
+                        Fluttertoast.showToast(
+                            msg: '${val["message"]}',
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                            timeInSecForIosWeb: 1,
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      } else {
+                        print(val["data"]);
+                        Navigator.pop(context);
+                      }
+                    });
+                  }),
             ],
           ),
-        ),
-      ),
+          body: SingleChildScrollView(
+            child: Container(
+              margin: const EdgeInsets.only(left: 25, right: 25),
+              child: Column(
+                children: [
+                  buildTextField(),
+                  buildImageField(),
+                  buildLocal(),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -96,7 +150,7 @@ class _AddNotePageState extends State<AddNotePage> {
     return Container(
       alignment: Alignment.centerLeft,
       child: Text(
-        _location,
+        showLocation ? _location.address : "",
         style: const TextStyle(
           fontSize: 10,
         ),
@@ -107,7 +161,7 @@ class _AddNotePageState extends State<AddNotePage> {
   @override
   void initState() {
     super.initState();
-    _location = "湖北";
+    // _location = "湖北";
   }
 
   Widget buildImageField() {
@@ -121,6 +175,7 @@ class _AddNotePageState extends State<AddNotePage> {
           return GestureDetector(
             onTap: () async {
               if (position == 0) {
+                imageUpload = false;
                 var imageFiles = await ImagePicker().pickMultiImage();
                 setState(() {
                   _images.addAll(imageFiles);
@@ -136,6 +191,7 @@ class _AddNotePageState extends State<AddNotePage> {
                         textColor: Colors.white,
                         fontSize: 16.0);
                   } else {
+                    imageUpload = true;
                     print(val["data"]);
                     var filesRes = FilesRes.fromJson(val["data"]);
                     _imageNames.addAll(filesRes.names ?? []);

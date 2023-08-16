@@ -16,6 +16,46 @@ class UserUtil {
     return User();
   }
 
+  static User updateNickName(String? nickname) {
+    if (nickname != null) {
+      var user = User.fromJson(SpUtil.getObject(SP_USER));
+      user.nickName = nickname;
+      SpUtil.putObject(SP_USER, user);
+      return user;
+    }
+    return User();
+  }
+
+  static User updateAvatar(String? avatar) {
+    if (avatar != null) {
+      var user = User.fromJson(SpUtil.getObject(SP_USER));
+      user.avatar = avatar;
+      SpUtil.putObject(SP_USER, user);
+      return user;
+    }
+    return User();
+  }
+
+  static User updateDescription(String? description) {
+    if (description != null) {
+      var user = User.fromJson(SpUtil.getObject(SP_USER));
+      user.description = description;
+      SpUtil.putObject(SP_USER, user);
+      return user;
+    }
+    return User();
+  }
+
+  static User updateUserNickName(String? nickname) {
+    if (nickname != null) {
+      var user = User.fromJson(SpUtil.getObject(SP_USER));
+      user.nickName = nickname;
+      SpUtil.putObject(SP_USER, user);
+      return user;
+    }
+    return User();
+  }
+
   // 获取用户信息
   static User getUserInfo() {
     bool isLogin = SpUtil.getBool(SP_USER_LOGIN);

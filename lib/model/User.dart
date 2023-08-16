@@ -64,6 +64,18 @@ class User {
 
   String? get createTime => _createTime;
 
+  set avatar(String? avatar) {
+    _avatar = avatar;
+  }
+
+  set nickName(String? nickName) {
+    _nickName = nickName;
+  }
+
+  set description(String? description) {
+    _description = description;
+  }
+
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
     map['UserId'] = _userId;
