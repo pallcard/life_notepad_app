@@ -19,8 +19,6 @@ class _HomaPageState extends State<HomaPage>
   int pageNum = 1;
   int pageSize = 5;
   List<NoteList> _noteList = [];
-  List widgets = [];
-
   late EasyRefreshController _easyRefreshController;
 
   @override

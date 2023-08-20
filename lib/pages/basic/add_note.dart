@@ -161,7 +161,6 @@ class _AddNotePageState extends State<AddNotePage> {
   @override
   void initState() {
     super.initState();
-    // _location = "湖北";
   }
 
   Widget buildImageField() {

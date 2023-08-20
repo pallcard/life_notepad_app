@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
 import 'package:life_notepad_app/pages/basic/add_note.dart';
+import 'package:life_notepad_app/pages/basic/message.dart';
 import '../pages/basic/my_info.dart';
 import '../pages/basic/navigation.dart';
 import '../pages/basic/login.dart';
@@ -26,12 +27,18 @@ var _myInfoHandler = Handler(
   return const MyInfoPage();
 });
 
+var _messageHandler = Handler(
+    handlerFunc: (BuildContext? context, Map<String, List<String>> params) {
+  return MessagePage();
+});
+
 // 路由配置
 class Routes {
   static String home = "/";
   static String login = "/login";
   static String addNote = "/add_note";
   static String myInfo = "/my_info";
+  static String message = "/message";
 
   static void configureRoutes(FluroRouter router) {
     router.notFoundHandler = Handler(
@@ -43,5 +50,6 @@ class Routes {
     router.define(login, handler: _loginHandler);
     router.define(addNote, handler: _addNoteHandler);
     router.define(myInfo, handler: _myInfoHandler);
+    router.define(message, handler: _messageHandler);
   }
 }

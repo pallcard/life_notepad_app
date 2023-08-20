@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../provide/current_index.dart';
 import '../nav/calendar_page.dart';
 import '../nav/home_page.dart';
-import '../nav/message_page.dart';
+import '../nav/chat_page.dart';
 import '../nav/my_page.dart';
 
 class BottomNavigationPage extends StatelessWidget {
@@ -32,7 +32,7 @@ class BottomNavigationPage extends StatelessWidget {
   final navigationItems = <Widget>[
     const HomaPage(),
     const CalendarPage(),
-    const MessagePage(),
+    const ChatPage(),
     const MyPage(),
   ];
 
