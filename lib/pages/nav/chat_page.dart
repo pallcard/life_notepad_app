@@ -41,9 +41,7 @@ class _ChatPageState extends State<ChatPage>
     var params = {
       'PageNum': pageNum,
       'PageSize': pageSize,
-      'UserId': UserUtil
-          .getUserInfo()
-          .userId,
+      'UserId': UserUtil.getUserInfo().userId,
     };
     var val = await request(context, ServiceUrl.chatList, params: params);
 
@@ -102,8 +100,8 @@ class _ChatPageState extends State<ChatPage>
                     pageNum++;
                     setState(() {
                       for (int i = 0;
-                      i < newChatListRes.chatList!.length;
-                      i++) {
+                          i < newChatListRes.chatList!.length;
+                          i++) {
                         _chatList.add(newChatListRes.chatList![i]);
                       }
                     });
@@ -154,13 +152,16 @@ class _ChatPageState extends State<ChatPage>
                   }
                   return GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, Routes.message);
+                      Navigator.pushNamed(context, Routes.message, arguments: {
+                        "senderId": "${UserUtil.getUserInfo().userId}",
+                        "receiverId": "${_chatList[i].senderId}"
+                      });
                     },
                     child: Container(
                       height: 90,
                       margin: EdgeInsets.only(top: 5, bottom: 5, right: 5),
                       padding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
                           color: _chatList[i].unread != null
                               ? const Color(0xFFFFEFEE)
@@ -196,10 +197,7 @@ class _ChatPageState extends State<ChatPage>
                                   ),
                                   Container(
                                     margin: EdgeInsets.only(top: 10),
-                                    width: MediaQuery
-                                        .of(context)
-                                        .size
-                                        .width *
+                                    width: MediaQuery.of(context).size.width *
                                         0.45,
                                     child: Text(
                                       _chatList[i].content ?? "",
@@ -225,27 +223,28 @@ class _ChatPageState extends State<ChatPage>
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                ),),
+                                ),
+                              ),
                               const SizedBox(
                                 height: 5,
                               ),
                               unreadStr != ""
                                   ? Container(
-                                width: 30,
-                                height: 30,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius:
-                                    BorderRadius.circular(30)),
-                                child: Text(
-                                  unreadStr,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10),
-                                ),
-                              )
+                                      width: 30,
+                                      height: 30,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          borderRadius:
+                                              BorderRadius.circular(30)),
+                                      child: Text(
+                                        unreadStr,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10),
+                                      ),
+                                    )
                                   : const Text(''),
                             ],
                           )

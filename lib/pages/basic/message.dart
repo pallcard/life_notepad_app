@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -7,6 +5,7 @@ import '../../config/contant.dart';
 import '../../config/service_url.dart';
 import '../../model/MessageList.dart';
 import '../../model/MessageListRes.dart';
+import '../../model/WsData.dart';
 import '../../service/service_method.dart';
 import '../../utils/user_util.dart';
 import 'package:web_socket_channel/io.dart';
@@ -19,9 +18,10 @@ class MessagePage extends StatefulWidget {
 }
 
 class _MessagePageState extends State<MessagePage> {
-  // final List<MessageList> _messageList = [];
+  late String senderId;
+  late String receiverId;
   int pageNum = 1;
-  int pageSize = 5;
+  int pageSize = 10;
   final List<MessageList> _messageList = [];
   final TextEditingController _contentController = TextEditingController();
   late EasyRefreshController _easyRefreshController;
@@ -44,20 +44,50 @@ class _MessagePageState extends State<MessagePage> {
   }
 
   void _connect() {
-    _channel = IOWebSocketChannel.connect("${Constant.serviceWsUrl}/ws");
+    _channel = IOWebSocketChannel.connect(
+        "${Constant.serviceWsUrl}/chat/web-socket?userId=${UserUtil.getUserInfo().userId}");
     _channel?.stream.listen((message) {
-      var newMessageListRes = MessageListRes.fromJson(message);
+      var wsData = WsData.fromJson(message);
+      var link = 2;
+      var content = "";
+      if (wsData.data!.startsWith("[link]")) {
+        link = 1;
+        content = wsData.data!.replaceFirst("[link]", "");
+      }
       setState(() {
-        for (int i = 0; i < newMessageListRes.messageList!.length; i++) {
-          _messageList.add(newMessageListRes.messageList![i]);
-        }
+        _messageList.insert(
+            0,
+            MessageList(
+                senderId: int.parse(wsData.senderId ?? ""),
+                receiverId: int.parse(wsData.receiverId ?? ""),
+                link: link,
+                content: content,
+                createTime: wsData.createTime,
+                unread: 2));
       });
     });
   }
 
-  void _sendMessage(String text) {
+  void _sendMessage() {
+    var text = _contentController.text;
     if (text.isNotEmpty) {
-      _channel?.sink.add(jsonEncode({'message': text}));
+      _channel?.sink.add(WsData(
+        type: "single",
+        data: text,
+        senderId: "${UserUtil.getUserInfo().userId}",
+        receiverId: "1",
+      ).toString());
+      setState(() {
+        _messageList.insert(
+            0,
+            MessageList(
+                senderId: 5,
+                receiverId: 1,
+                link: 2,
+                content: text,
+                createTime: "2023",
+                unread: 2));
+      });
       _contentController.clear();
     }
   }
@@ -142,13 +172,7 @@ class _MessagePageState extends State<MessagePage> {
             iconSize: 25.0,
             color: Theme.of(context).primaryColor,
             onPressed: () {
-              Fluttertoast.showToast(
-                  msg: "发送消息:${_contentController.text}",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.CENTER,
-                  timeInSecForIosWeb: 1,
-                  textColor: Colors.white,
-                  fontSize: 16.0);
+              _sendMessage();
             },
           )
         ],
@@ -160,8 +184,8 @@ class _MessagePageState extends State<MessagePage> {
     var params = {
       'PageNum': pageNum,
       'PageSize': pageSize,
-      'SenderId': 1,
-      'ReceiverId': 5
+      'SenderId': senderId,
+      'ReceiverId': receiverId,
     };
     var val = await request(context, ServiceUrl.messageList, params: params);
 
@@ -182,12 +206,15 @@ class _MessagePageState extends State<MessagePage> {
 
   @override
   Widget build(BuildContext context) {
+    /*获取传递过来的参数*/
+    Map? args = ModalRoute.of(context)?.settings.arguments as Map?;
+    senderId = args?["senderId"];
+    receiverId = args?["receiverId"];
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       appBar: AppBar(
         title: Text(
           UserUtil.getUserInfo().nickName ?? "",
-          // widget.user.name,
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
         ),
         elevation: 0.0,
@@ -221,17 +248,20 @@ class _MessagePageState extends State<MessagePage> {
                         }
                         return EasyRefresh(
                             controller: _easyRefreshController,
-                            header: MaterialHeader(),
-                            footer: const ClassicFooter(
+                            header: const ClassicHeader(
                               noMoreText: "我也是有底线的",
                               messageText: '最后更新于%T',
                             ),
-                            onLoad: () async {},
-                            onRefresh: () async {
+                            // onRefresh: () async {
+                            //   print('开始加载更多222${pageNum}');
+                            // },
+                            onLoad: () async {
                               print('开始加载更多${pageNum}');
                               var params = {
                                 'PageNum': pageNum,
-                                'PageSize': pageSize
+                                'PageSize': pageSize,
+                                'SenderId': senderId,
+                                'ReceiverId': receiverId,
                               };
                               await request(context, ServiceUrl.messageList,
                                       params: params)
