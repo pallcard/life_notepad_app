@@ -85,7 +85,8 @@ class _MessagePageState extends State<MessagePage> {
                 receiverId: 1,
                 link: 2,
                 content: text,
-                createTime: "2023",
+                createTime:
+                    DateTime.now().toLocal().toString().substring(0, 19),
                 unread: 2));
       });
       _contentController.clear();
